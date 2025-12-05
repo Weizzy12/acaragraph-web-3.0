@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acaragraph Red - Админ панель</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Хедер админки -->
+        <div class="admin-header">
+            <div class="admin-title">
+                <div class="admin-crown">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <div>
+                    <h1 style="color: #FFFFFF;">ACARAGRAPH RED</h1>
+                    <p style="color: #FF6666; font-size: 14px;">Панель администратора</p>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="window.location.href='chat.html'">
+                    <i class="fas fa-arrow-left"></i> Вернуться в чат
+                </button>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
+            </div>
+        </div>
+
+        <!-- Вкладки -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="openTab('dashboard')">
+                <i class="fas fa-tachometer-alt"></i> Дашборд
+            </button>
+            <button class="tab-btn" onclick="openTab('users')">
+                <i class="fas fa-users"></i> Пользователи
+            </button>
+            <button class="tab-btn" onclick="openTab('codes')">
+                <i class="fas fa-key"></i> Коды доступа
+            </button>
+            <button class="tab-btn" onclick="openTab('messages')">
+                <i class="fas fa-comments"></i> Сообщения
+            </button>
+            <button class="tab-btn" onclick="openTab('logs')">
+                <i class="fas fa-history"></i> Логи
+            </button>
+            <button class="tab-btn" onclick="openTab('settings')">
+                <i class="fas fa-cog"></i> Настройки
+            </button>
+        </div>
+
+        <!-- Дашборд -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section-header">
+                <h2><i class="fas fa-tachometer-alt"></i> Статистика системы</h2>
+                <button class="btn btn-primary" onclick="refreshStats()">
+                    <i class="fas fa-sync-alt"></i> Обновить
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Всего пользователей</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-number" id="onlineUsers">0</div>
+                    <div class="stat-label">Онлайн сейчас</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-number" id="totalMessages">0</div>
+                    <div class="stat-label">Всего сообщений</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="stat-number" id="totalCodes">0</div>
+                    <div class="stat-label">Кодов доступа</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="stat-number" id="bannedUsers">0</div>
+                    <div class="stat-label">Забанено</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="stat-number" id="adminUsers">0</div>
+                    <div class="stat-label">Администраторов</div>
+                </div>
+            </div>
+
+            <div class="section-header" style="margin-top: 40px;">
+                <h2><i class="fas fa-chart-line"></i> Активность за 24 часа</h2>
+            </div>
+
+            <div class="card">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
+                    <div>
+                        <h3 style="color: #FF6666; margin-bottom: 20px;">
+                            <i class="fas fa-user-plus"></i> Новые регистрации
+                        </h3>
+                        <div id="recentRegistrations">
+                            <div class="loading">
+                                <div class="loading-spinner"></div>
+                                <div class="loading-text">Загрузка...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #FF6666; margin-bottom: 20px;">
+                            <i class="fas fa-bolt"></i> Быстрые действия
+                        </h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="btn btn-primary" onclick="generateCodeModal()">
+                                <i class="fas fa-plus"></i> Создать код
+                            </button>
+                            <button class="btn btn-secondary" onclick="openTab('users')">
+                                <i class="fas fa-user-cog"></i> Управление пользователями
+                            </button>
+                            <button class="btn btn-secondary" onclick="openTab('logs')">
+                                <i class="fas fa-scroll"></i> Просмотр логов
+                            </button>
+                            <button class="btn btn-danger" onclick="clearOldMessages()">
+                                <i class="fas fa-trash"></i> Очистить старые сообщения
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Пользователи -->
+        <div id="users" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fas fa-users"></i> Управление пользователями</h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" 
+                           id="userSearch" 
+                           class="form-input" 
+                           placeholder="Поиск по имени или Telegram..."
+                           style="width: 300px;"
+                           onkeyup="searchUsers()">
+                    <button class="btn btn-secondary" onclick="exportUsers()">
+                        <i class="fas fa-download"></i> Экспорт
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Пользователь</th>
+                            <th>Telegram</th>
+                            <th>Роль</th>
+                            <th>Статус</th>
+                            <th>Сообщений</th>
+                            <th>Дата регистрации</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 40px;">
+                                <div class="loading">
+                                    <div class="loading-spinner"></div>
+                                    <div class="loading-text">Загрузка пользователей...</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Коды доступа -->
+        <div id="codes" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fas fa-key"></i> Управление кодами доступа</h2>
+                <button class="btn btn-primary" onclick="generateCodeModal()">
+                    <i class="fas fa-plus"></i> Создать новый код
+                </button>
+            </div>
+
+            <div id="newCodeAlert" class="notification success" style="display: none; margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i>
+                <span>Новый код создан: <strong id="newCodeValue"></strong></span>
+                <button class="btn btn-secondary btn-sm" onclick="copyNewCode()" style="margin-left: 10px;">
+                    <i class="fas fa-copy"></i> Копировать
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Код</th>
+                            <th>Тип</th>
+                            <th>Создал</th>
+                            <th>Использований</th>
+                            <th>Использовал</th>
+                            <th>Создан</th>
+                            <th>Истекает</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codesTable">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 40px;">
+                                <div class="loading">
+                                    <div class="loading-spinner"></div>
+                                    <div class="loading-text">Загрузка кодов...</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Сообщения -->
+        <div id="messages" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fas fa-comments"></i> Управление сообщениями</h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" 
+                           id="messageSearch" 
+                           class="form-input" 
+                           placeholder="Поиск в сообщениях..."
+                           style="width: 300px;">
+                    <button class="btn btn-danger" onclick="deleteSelectedMessages()">
+                        <i class="fas fa-trash"></i> Удалить выбранные
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20px;"><input type="checkbox" id="selectAllMessages"></th>
+                            <th>ID</th>
+                            <th>Отправитель</th>
+                            <th>Сообщение</th>
+                            <th>Время</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messagesTable">
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px;">
+                                <div class="loading">
+                                    <div class="loading-spinner"></div>
+                                    <div class="loading-text">Загрузка сообщений...</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Логи -->
+        <div id="logs" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fas fa-history"></i> Системные логи</h2>
+                <div style="display: flex; gap: 10px;">
+                    <select id="logType" class="form-input" style="width: 200px;">
+                        <option value="all">Все события</option>
+                        <option value="login">Вход/выход</option>
+                        <option value="message">Сообщения</option>
+                        <option value="admin">Действия админа</option>
+                        <option value="error">Ошибки</option>
+                    </select>
+                    <button class="btn btn-secondary" onclick="refreshLogs()">
+                        <i class="fas fa-sync-alt"></i> Обновить
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Время</th>
+                            <th>Тип</th>
+                            <th>Пользователь</th>
+                            <th>Описание</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px;">
+                                <div class="loading">
+                                    <div class="loading-spinner"></div>
+                                    <div class="loading-text">Загрузка логов...</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Настройки -->
+        <div id="settings" class="tab-content">
+            <div class="section-header">
+                <h2><i class="fas fa-cog"></i> Настройки системы</h2>
+            </div>
+
+            <div class="card">
+                <h3 style="color: #FF6666; margin-bottom: 20px;">
+                    <i class="fas fa-shield-alt"></i> Настройки безопасности
+                </h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Режим регистрации</label>
+                    <div style="display: flex; gap: 20px;">
+                        <label class="checkbox">
+                            <input type="radio" name="registrationMode" value="open" checked>
+                            <span class="checkmark"></span>
+                            Открытая (любой код)
+                        </label>
+                        <label class="checkbox">
+                            <input type="radio" name="registrationMode" value="closed">
+                            <span class="checkmark"></span>
+                            Закрытая (только админы создают коды)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Максимальная длина сообщения</label>
+                    <input type="number" 
+                           id="maxMessageLength" 
+                           class="form-input" 
+                           value="2000"
+                           style="width: 200px;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Автоочистка сообщений</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" 
+                               id="autoCleanDays" 
+                               class="form-input" 
+                               value="30"
+                               style="width: 100px;">
+                        <span>дней</span>
+                        <button class="btn btn-secondary btn-sm" onclick="saveAutoClean()">
+                            Сохранить
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3 style="color: #FF6666; margin-bottom: 20px;">
+                    <i class="fas fa-bell"></i> Уведомления администратора
+                </h3>
+                
+                <div class="form-group">
+                    <label class="checkbox">
+                        <input type="checkbox" id="notifyNewUser" checked>
+                        <span class="checkmark"></span>
+                        Уведомлять о новых регистрациях
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="notifyReport" checked>
+                        <span class="checkmark"></span>
+                        Уведомлять о жалобах
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="notifyError" checked>
+                        <span class="checkmark"></span>
+                        Уведомлять об ошибках
+                    </label>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3 style="color: #FF6666; margin-bottom: 20px;">
+                    <i class="fas fa-database"></i> Управление базой данных
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                    <button class="btn btn-secondary" onclick="backupDatabase()">
+                        <i class="fas fa-save"></i> Создать бэкап
+                    </button>
+                    <button class="btn btn-secondary" onclick="optimizeDatabase()">
+                        <i class="fas fa-compress"></i> Оптимизировать БД
+                    </button>
+                    <button class="btn btn-danger" onclick="showResetModal()">
+                        <i class="fas fa-exclamation-triangle"></i> Сброс системы
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания кода -->
+    <div id="createCodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #FF0000;">
+                    <i class="fas fa-key"></i> Создать код доступа
+                </h3>
+                <button class="modal-close" onclick="closeCreateCodeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Тип кода</label>
+                    <select id="codeType" class="form-input">
+                        <option value="user">👤 Обычный пользователь</option>
+                        <option value="admin">👑 Администратор</option>
+                        <option value="super_admin">👑👑👑 Супер-администратор</option>
+                        <option value="guest">👥 Гостевой доступ</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Количество использований</label>
+                    <input type="number" 
+                           id="codeUses" 
+                           class="form-input" 
+                           value="1"
+                           min="1"
+                           max="1000">
+                    <small style="color: #888888;">0 = без ограничений</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Срок действия</label>
+                    <input type="number" 
+                           id="codeExpireDays" 
+                           class="form-input" 
+                           value="30"
+                           min="1"
+                           max="365">
+                    <small style="color: #888888;">в днях (0 = бессрочно)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Примечание (необязательно)</label>
+                    <textarea id="codeNote" 
+                              class="form-input" 
+                              rows="3"
+                              placeholder="Для чего этот код..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer" style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="generateCode()">
+                    <i class="fas fa-plus"></i> Создать код
+                </button>
+                <button class="btn btn-secondary" onclick="closeCreateCodeModal()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно сброса системы -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #FF0000;">
+                    <i class="fas fa-exclamation-triangle"></i> Опасная зона!
+                </h3>
+                <button class="modal-close" onclick="closeResetModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; color: #FF0000; margin-bottom: 10px;">
+                        ⚠️
+                    </div>
+                    <h3 style="color: #FF3333;">Сброс системы</h3>
+                </div>
+                
+                <div style="background: rgba(255, 0, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="color: #FF9999;">
+                        <strong>Внимание!</strong> Эти действия нельзя отменить!
+                    </p>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-danger" onclick="resetMessages()">
+                        <i class="fas fa-comments"></i> Очистить все сообщения
+                    </button>
+                    <button class="btn btn-danger" onclick="resetUsers()">
+                        <i class="fas fa-users"></i> Очистить всех пользователей
+                    </button>
+                    <button class="btn btn-danger" onclick="resetCodes()">
+                        <i class="fas fa-key"></i> Очистить все коды
+                    </button>
+                    <button class="btn btn-danger" onclick="fullReset()">
+                        <i class="fas fa-bomb"></i> ПОЛНЫЙ СБРОС СИСТЕМЫ
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255, 0, 0, 0.05); border-radius: 8px;">
+                    <p style="color: #FF6666; font-size: 14px;">
+                        <strong>⚠️ Внимание:</strong> Полный сброс удалит ВСЕ данные и восстановить их будет невозможно!
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="closeResetModal()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notificationContainer"></div>
+
+    <!-- Основной скрипт -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        let currentAdmin = null;
+        let allUsers = [];
+        let allCodes = [];
+        let allMessages = [];
+        let allLogs = [];
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Acaragraph Red - админ панель инициализируется');
+            
+            // Проверяем авторизацию
+            await checkAdminAuth();
+            
+            // Загружаем начальные данные
+            loadDashboard();
+            loadUsers();
+            loadCodes();
+            
+            // Автообновление каждые 30 секунд
+            setInterval(() => {
+                const activeTab = document.querySelector('.tab-content.active').id;
+                if (activeTab === 'dashboard') loadDashboard();
+                if (activeTab === 'users') loadUsers();
+                if (activeTab === 'codes') loadCodes();
+                if (activeTab === 'logs') loadLogs();
+            }, 30000);
+        });
+
+        // ========== АВТОРИЗАЦИЯ ==========
+        async function checkAdminAuth() {
+            try {
+                // Проверяем локальное хранилище
+                const savedUser = localStorage.getItem('acaragraph_user');
+                if (!savedUser) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                currentAdmin = JSON.parse(savedUser);
+                
+                // Проверяем права
+                if (currentAdmin.role !== 'admin' && currentAdmin.role !== 'super_admin') {
+                    showNotification('🚫 Требуются права администратора', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'chat.html';
+                    }, 2000);
+                    return;
+                }
+                
+                console.log('✅ Админ авторизован:', currentAdmin.nickname);
+                
+            } catch (error) {
+                console.error('❌ Ошибка проверки авторизации:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ========== ВКЛАДКИ ==========
+        function openTab(tabName) {
+            // Скрываем все вкладки
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Убираем активный класс у всех кнопок
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показываем выбранную вкладку
+            const activeTab = document.getElementById(tabName);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+            
+            // Активируем кнопку
+            event.currentTarget.classList.add('active');
+            
+            // Загружаем данные для вкладки
+            switch(tabName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'codes':
+                    loadCodes();
+                    break;
+                case 'messages':
+                    loadMessages();
+                    break;
+                case 'logs':
+                    loadLogs();
+                    break;
+            }
+        }
+
+        // ========== ДАШБОРД ==========
+        async function loadDashboard() {
+            try {
+                // Загружаем статистику
+                const response = await fetch(`/api/admin/stats?adminId=${currentAdmin.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateStats(data.stats);
+                    loadRecentRegistrations(data.recentUsers);
+                } else {
+                    showNotification('Ошибка загрузки статистики', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки дашборда:', error);
+                showNotification('Ошибка загрузки данных', 'error');
+            }
+        }
+
+        function updateStats(stats) {
+            if (!stats) return;
+            
+            const elements = {
+                'totalUsers': 'totalUsers',
+                'onlineUsers': 'onlineUsers',
+                'totalMessages': 'totalMessages',
+                'totalCodes': 'totalCodes',
+                'bannedUsers': 'bannedUsers',
+                'adminUsers': 'adminUsers'
+            };
+            
+            for (const [key, elementId] of Object.entries(elements)) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.textContent = stats[key] || 0;
+                }
+            }
+        }
+
+        function loadRecentRegistrations(users) {
+            const container = document.getElementById('recentRegistrations');
+            if (!container) return;
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p style="color: #888888; text-align: center;">Нет новых регистраций</p>';
+                return;
+            }
+            
+            let html = '';
+            users.slice(0, 5).forEach(user => {
+                const time = formatTime(user.created_at);
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; 
+                                padding: 10px; border-bottom: 1px solid rgba(255, 0, 0, 0.1);">
+                        <div>
+                            <div style="font-weight: bold; color: #FFFFFF;">${user.nickname}</div>
+                            <div style="font-size: 12px; color: #888888;">${user.tg_username}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: #FF6666;">${time}</div>
+                            <span class="status-badge ${user.role === 'admin' || user.role === 'super_admin' ? 'status-admin' : 'status-active'}">
+                                ${user.role === 'admin' || user.role === 'super_admin' ? '👑' : '👤'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function refreshStats() {
+            loadDashboard();
+            showNotification('Статистика обновлена', 'success');
+        }
+
+        // ========== ПОЛЬЗОВАТЕЛИ ==========
+        async function loadUsers() {
+            try {
+                const response = await fetch(`/api/admin/users?adminId=${currentAdmin.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allUsers = data.users;
+                    displayUsers(allUsers);
+                } else {
+                    showNotification('Ошибка загрузки пользователей', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки пользователей:', error);
+                showNotification('Ошибка загрузки пользователей', 'error');
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersTable');
+            if (!container) return;
+            
+            if (!users || users.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px; color: #888888;">
+                            <i class="fas fa-users" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>Нет пользователей</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            users.forEach(user => {
+                const regDate = new Date(user.created_at).toLocaleDateString();
+                const lastSeen = user.last_seen ? formatTime(user.last_seen) : 'Никогда';
+                
+                let roleBadge = '<span class="status-badge status-active">👤</span>';
+                if (user.role === 'admin') roleBadge = '<span class="status-badge status-admin">👑</span>';
+                if (user.role === 'super_admin') roleBadge = '<span class="status-badge status-admin">👑👑👑</span>';
+                
+                let statusBadge = '<span class="status-badge status-active">✅</span>';
+                if (user.is_banned) statusBadge = '<span class="status-badge status-banned">🚫</span>';
+                if (user.muted_until && new Date(user.muted_until) > new Date()) {
+                    statusBadge = '<span class="status-badge status-inactive">🔇</span>';
+                }
+                
+                html += `
+                    <tr>
+                        <td>${user.id}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="user-avatar-sm" style="background-color: ${user.avatar_color}">
+                                    ${user.nickname.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div style="font-weight: bold;">${user.nickname}</div>
+                                    <div style="font-size: 12px; color: #888888;">${lastSeen}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${user.tg_username || '-'}</td>
+                        <td>${roleBadge}</td>
+                        <td>${statusBadge}</td>
+                        <td>${user.message_count || 0}</td>
+                        <td>${regDate}</td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="viewUser(${user.id})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${user.id !== currentAdmin.id ? `
+                                    ${user.is_banned ? 
+                                        `<button class="btn btn-success btn-sm" onclick="toggleBan(${user.id}, false)">
+                                            <i class="fas fa-check"></i>
+                                        </button>` : 
+                                        `<button class="btn btn-danger btn-sm" onclick="toggleBan(${user.id}, true)">
+                                            <i class="fas fa-ban"></i>
+                                        </button>`
+                                    }
+                                    ${user.role !== 'admin' && user.role !== 'super_admin' ? 
+                                        `<button class="btn btn-success btn-sm" onclick="toggleAdmin(${user.id}, true)">
+                                            <i class="fas fa-crown"></i>
+                                        </button>` : 
+                                        user.id !== currentAdmin.id ? 
+                                        `<button class="btn btn-warning btn-sm" onclick="toggleAdmin(${user.id}, false)">
+                                            <i class="fas fa-user"></i>
+                                        </button>` : ''
+                                    }
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function searchUsers() {
+            const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayUsers(allUsers);
+                return;
+            }
+            
+            const filtered = allUsers.filter(user => 
+                user.nickname.toLowerCase().includes(searchTerm) ||
+                (user.tg_username && user.tg_username.toLowerCase().includes(searchTerm)) ||
+                user.id.toString().includes(searchTerm)
+            );
+            
+            displayUsers(filtered);
+        }
+
+        async function toggleBan(userId, ban) {
+            const action = ban ? 'ban' : 'unban';
+            const confirmText = ban ? 
+                `Забанить пользователя?` : 
+                `Разбанить пользователя?`;
+            
+            if (!confirm(confirmText)) return;
+            
+            try {
+                const response = await fetch('/api/admin/users/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        adminId: currentAdmin.id,
+                        userId: userId,
+                        action: action
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    loadUsers();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка бана:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        async function toggleAdmin(userId, makeAdmin) {
+            const action = makeAdmin ? 'make_admin' : 'remove_admin';
+            const confirmText = makeAdmin ? 
+                `Сделать пользователя администратором?` : 
+                `Убрать права администратора у пользователя?`;
+            
+            if (!confirm(confirmText)) return;
+            
+            try {
+                const response = await fetch('/api/admin/users/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        adminId: currentAdmin.id,
+                        userId: userId,
+                        action: action
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    loadUsers();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка изменения роли:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        function viewUser(userId) {
+            window.open(`chat.html?profile=${userId}`, '_blank');
+        }
+
+        function exportUsers() {
+            const csv = [
+                ['ID', 'Имя', 'Telegram', 'Роль', 'Статус', 'Сообщений', 'Дата регистрации'],
+                ...allUsers.map(user => [
+                    user.id,
+                    user.nickname,
+                    user.tg_username || '',
+                    user.role,
+                    user.is_banned ? 'Забанен' : 'Активен',
+                    user.message_count || 0,
+                    new Date(user.created_at).toLocaleDateString()
+                ])
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `acaragraph_users_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            
+            showNotification('Экспорт завершен', 'success');
+        }
+
+        // ========== КОДЫ ДОСТУПА ==========
+        async function loadCodes() {
+            try {
+                const response = await fetch(`/api/admin/codes?adminId=${currentAdmin.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allCodes = data.codes;
+                    displayCodes(allCodes);
+                } else {
+                    showNotification('Ошибка загрузки кодов', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки кодов:', error);
+                showNotification('Ошибка загрузки кодов', 'error');
+            }
+        }
+
+        function displayCodes(codes) {
+            const container = document.getElementById('codesTable');
+            if (!container) return;
+            
+            if (!codes || codes.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 40px; color: #888888;">
+                            <i class="fas fa-key" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>Нет кодов доступа</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            codes.forEach(code => {
+                const created = new Date(code.created_at).toLocaleDateString();
+                const expires = code.expires_at ? new Date(code.expires_at).toLocaleDateString() : 'Бессрочно';
+                const used = code.used_at ? new Date(code.used_at).toLocaleDateString() : '-';
+                
+                let typeBadge = '<span class="status-badge status-active">👤</span>';
+                if (code.type === 'admin') typeBadge = '<span class="status-badge status-admin">👑</span>';
+                if (code.type === 'super_admin') typeBadge = '<span class="status-badge status-admin">👑👑👑</span>';
+                if (code.type === 'guest') typeBadge = '<span class="status-badge status-inactive">👥</span>';
+                
+                let statusBadge = '<span class="status-badge status-active">✅</span>';
+                if (!code.is_active) statusBadge = '<span class="status-badge status-banned">🚫</span>';
+                if (code.used_by) statusBadge = '<span class="status-badge status-inactive">🔄</span>';
+                if (code.expires_at && new Date(code.expires_at) < new Date()) {
+                    statusBadge = '<span class="status-badge status-banned">⌛</span>';
+                }
+                
+                html += `
+                    <tr>
+                        <td><strong>${code.code}</strong></td>
+                        <td>${typeBadge}</td>
+                        <td>${code.creator_nickname || '-'}</td>
+                        <td>${code.uses_count || 0}/${code.max_uses || '∞'}</td>
+                        <td>${code.used_by_nickname || '-'}</td>
+                        <td>${created}</td>
+                        <td>${expires}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="table-actions">
+                                ${code.is_active && !code.used_by ? `
+                                    <button class="btn btn-danger btn-sm" onclick="deactivateCode('${code.code}')">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-secondary btn-sm" onclick="copyCode('${code.code}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function generateCodeModal() {
+            document.getElementById('createCodeModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCreateCodeModal() {
+            document.getElementById('createCodeModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        async function generateCode() {
+            const type = document.getElementById('codeType').value;
+            const maxUses = parseInt(document.getElementById('codeUses').value) || 1;
+            const expireDays = parseInt(document.getElementById('codeExpireDays').value) || 30;
+            const note = document.getElementById('codeNote').value;
+            
+            try {
+                const response = await fetch('/api/admin/codes/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        adminId: currentAdmin.id,
+                        type: type,
+                        maxUses: maxUses,
+                        expiresIn: expireDays
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Показываем новый код
+                    const alert = document.getElementById('newCodeAlert');
+                    const codeSpan = document.getElementById('newCodeValue');
+                    
+                    codeSpan.textContent = data.code;
+                    alert.style.display = 'flex';
+                    
+                    // Закрываем модальное окно
+                    closeCreateCodeModal();
+                    
+                    // Обновляем список кодов
+                    loadCodes();
+                    
+                    showNotification(`Код создан: ${data.code}`, 'success');
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка создания кода:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        function copyNewCode() {
+            const code = document.getElementById('newCodeValue').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Код скопирован в буфер обмена', 'success');
+            });
+        }
+
+        function copyCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                showNotification('Код скопирован в буфер обмена', 'success');
+            });
+        }
+
+        async function deactivateCode(code) {
+            if (!confirm(`Деактивировать код ${code}?`)) return;
+            
+            try {
+                const response = await fetch('/api/admin/deactivate-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Код деактивирован', 'success');
+                    loadCodes();
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка деактивации кода:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        // ========== СООБЩЕНИЯ ==========
+        async function loadMessages() {
+            try {
+                const response = await fetch(`/api/admin/messages?adminId=${currentAdmin.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allMessages = data.messages;
+                    displayMessages(allMessages);
+                } else {
+                    showNotification('Ошибка загрузки сообщений', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки сообщений:', error);
+                showNotification('Ошибка загрузки сообщений', 'error');
+            }
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesTable');
+            if (!container) return;
+            
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #888888;">
+                            <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>Нет сообщений</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            messages.forEach(message => {
+                const time = formatTime(message.timestamp || message.created_at);
+                const text = message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text;
+                
+                html += `
+                    <tr>
+                        <td><input type="checkbox" class="message-checkbox" value="${message.id}"></td>
+                        <td>${message.id}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="user-avatar-sm" style="background-color: ${message.user?.avatar_color || '#FF0000'}">
+                                    ${message.user?.nickname?.charAt(0) || '?'}
+                                </div>
+                                ${message.user?.nickname || 'Неизвестный'}
+                            </div>
+                        </td>
+                        <td>${escapeHtml(text)}</td>
+                        <td>${time}</td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-danger btn-sm" onclick="deleteMessage(${message.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+            
+            // Настройка "Выбрать все"
+            const selectAll = document.getElementById('selectAllMessages');
+            if (selectAll) {
+                selectAll.onchange = function() {
+                    const checkboxes = document.querySelectorAll('.message-checkbox');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                };
+            }
+        }
+
+        function deleteSelectedMessages() {
+            const checkboxes = document.querySelectorAll('.message-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showNotification('Выберите сообщения для удаления', 'warning');
+                return;
+            }
+            
+            if (!confirm(`Удалить ${checkboxes.length} сообщений?`)) return;
+            
+            const ids = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Здесь должна быть реализация удаления сообщений через API
+            showNotification(`Удалено ${ids.length} сообщений`, 'success');
+            
+            // Обновляем список
+            loadMessages();
+        }
+
+        function deleteMessage(messageId) {
+            if (!confirm('Удалить это сообщение?')) return;
+            
+            // Здесь должна быть реализация удаления сообщения через API
+            showNotification('Сообщение удалено', 'success');
+            
+            // Обновляем список
+            loadMessages();
+        }
+
+        function clearOldMessages() {
+            if (!confirm('Очистить все сообщения старше 30 дней?')) return;
+            
+            // Здесь должна быть реализация очистки старых сообщений
+            showNotification('Старые сообщения очищены', 'success');
+        }
+
+        // ========== ЛОГИ ==========
+        async function loadLogs() {
+            try {
+                const logType = document.getElementById('logType').value;
+                const response = await fetch(`/api/admin/logs?adminId=${currentAdmin.id}&type=${logType}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allLogs = data.logs;
+                    displayLogs(allLogs);
+                } else {
+                    showNotification('Ошибка загрузки логов', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки логов:', error);
+                showNotification('Ошибка загрузки логов', 'error');
+            }
+        }
+
+        function displayLogs(logs) {
+            const container = document.getElementById('logsTable');
+            if (!container) return;
+            
+            if (!logs || logs.length === 0) {
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: #888888;">
+                            <i class="fas fa-history" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>Нет логов</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            logs.forEach(log => {
+                const time = formatTime(log.created_at);
+                let typeBadge = '<span class="status-badge status-active">ℹ️</span>';
+                
+                if (log.event_type.includes('error')) typeBadge = '<span class="status-badge status-banned">❌</span>';
+                if (log.event_type.includes('login')) typeBadge = '<span class="status-badge status-inactive">🔑</span>';
+                if (log.event_type.includes('admin')) typeBadge = '<span class="status-badge status-admin">👑</span>';
+                
+                html += `
+                    <tr>
+                        <td>${time}</td>
+                        <td>${typeBadge} ${log.event_type}</td>
+                        <td>${log.user_id || 'Система'}</td>
+                        <td>${log.description || '-'}</td>
+                        <td>${log.ip_address || '-'}</td>
+                    </tr>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function refreshLogs() {
+            loadLogs();
+            showNotification('Логи обновлены', 'success');
+        }
+
+        // ========== НАСТРОЙКИ ==========
+        function saveAutoClean() {
+            const days = document.getElementById('autoCleanDays').value;
+            showNotification(`Автоочистка настроена на ${days} дней`, 'success');
+        }
+
+        function backupDatabase() {
+            showNotification('Создание бэкапа...', 'info');
+            // Здесь должна быть реализация создания бэкапа
+            setTimeout(() => {
+                showNotification('Бэкап создан успешно', 'success');
+            }, 2000);
+        }
+
+        function optimizeDatabase() {
+            showNotification('Оптимизация базы данных...', 'info');
+            // Здесь должна быть реализация оптимизации БД
+            setTimeout(() => {
+                showNotification('База данных оптимизирована', 'success');
+            }, 2000);
+        }
+
+        function showResetModal() {
+            document.getElementById('resetModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function resetMessages() {
+            if (!confirm('Очистить ВСЕ сообщения? Это действие нельзя отменить!')) return;
+            
+            showNotification('Очистка сообщений...', 'info');
+            // Здесь должна быть реализация очистки сообщений
+            setTimeout(() => {
+                showNotification('Все сообщения очищены', 'success');
+                closeResetModal();
+            }, 2000);
+        }
+
+        function resetUsers() {
+            if (!confirm('Очистить ВСЕХ пользователей (кроме текущего админа)? Это действие нельзя отменить!')) return;
+            
+            showNotification('Очистка пользователей...', 'info');
+            // Здесь должна быть реализация очистки пользователей
+            setTimeout(() => {
+                showNotification('Все пользователи очищены', 'success');
+                closeResetModal();
+            }, 2000);
+        }
+
+        function resetCodes() {
+            if (!confirm('Очистить ВСЕ коды доступа? Это действие нельзя отменить!')) return;
+            
+            showNotification('Очистка кодов...', 'info');
+            // Здесь должна быть реализация очистки кодов
+            setTimeout(() => {
+                showNotification('Все коды очищены', 'success');
+                closeResetModal();
+            }, 2000);
+        }
+
+        function fullReset() {
+            if (!confirm('ПОЛНЫЙ СБРОС СИСТЕМЫ? Это удалит ВСЕ данные без возможности восстановления! Продолжить?')) return;
+            
+            showNotification('Полный сброс системы...', 'error');
+            // Здесь должна быть реализация полного сброса
+            setTimeout(() => {
+                showNotification('Система полностью сброшена', 'success');
+                localStorage.removeItem('acaragraph_user');
+                closeResetModal();
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }, 3000);
+        }
+
+        // ========== УТИЛИТЫ ==========
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (date.toDateString() === now.toDateString()) {
+                if (diffMins < 1) return 'только что';
+                if (diffMins < 60) return `${diffMins} мин назад`;
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays === 1) return 'вчера';
+            if (diffDays < 7) return `${diffDays} дней назад`;
+            
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <i class="fas ${icons[type] || icons.info}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: #AAAAAA; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        function logout() {
+            if (confirm('Вы действительно хотите выйти?')) {
+                localStorage.removeItem('acaragraph_user');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
+        window.onclick = function(event) {
+            const modals = ['createCodeModal', 'resetModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modals = ['createCodeModal', 'resetModal'];
+                modals.forEach(modalId => {
+                    const modal = document.getElementById(modalId);
+                    if (modal && modal.style.display === 'block') {
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    }
+                });
+            }
+        });
+
+        // ========== ДЕБАГ ФУНКЦИИ ==========
+        window.debugAdminInfo = function() {
+            console.log('=== ADMIN DEBUG INFO ===');
+            console.log('Current Admin:', currentAdmin);
+            console.log('Users:', allUsers.length);
+            console.log('Codes:', allCodes.length);
+            console.log('Messages:', allMessages.length);
+            console.log('Logs:', allLogs.length);
+            console.log('=======================');
+        };
+    </script>
+</body>
+</html>

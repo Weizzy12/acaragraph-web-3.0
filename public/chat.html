@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acaragraph Red - Чат</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Боковая панель -->
+        <div class="sidebar">
+            <!-- Хедер боковой панели -->
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="user-avatar" id="currentUserAvatar">
+                        A
+                    </div>
+                    <div class="user-info">
+                        <div class="user-name" id="currentUserName">Загрузка...</div>
+                        <div class="user-status">
+                            <span class="status-dot online" id="statusDot"></span>
+                            <span id="currentUserRole">Пользователь</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Статистика чата -->
+            <div class="card" style="margin: 15px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <div>
+                        <div style="font-size: 12px; color: #FF6666;">ОНЛАЙН</div>
+                        <div style="font-size: 24px; font-weight: bold;" id="onlineCount">0</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #FF6666;">СООБЩЕНИЯ</div>
+                        <div style="font-size: 24px; font-weight: bold;" id="messageCount">0</div>
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <button class="btn btn-primary btn-sm w-100" onclick="testConnection()">
+                        <i class="fas fa-wifi"></i> Проверить связь
+                    </button>
+                </div>
+            </div>
+
+            <!-- Список пользователей -->
+            <div class="card" style="margin: 0 15px 15px; padding: 15px;">
+                <div class="card-header" style="padding: 0; margin-bottom: 15px; border: none;">
+                    <h3 style="font-size: 16px;"><i class="fas fa-users"></i> ОНЛАЙН</h3>
+                    <div style="font-size: 12px; color: #FF6666;" id="onlineUsersCount">0</div>
+                </div>
+                <div class="users-list" id="usersList">
+                    <!-- Список пользователей загружается здесь -->
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">Загрузка пользователей...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Панель управления -->
+            <div class="sidebar-footer" style="padding: 15px; margin-top: auto;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary btn-sm flex-1" onclick="window.location.href='admin.html'" id="adminBtn" style="display: none;">
+                        <i class="fas fa-crown"></i> Админка
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="showSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основная область чата -->
+        <div class="chat-main">
+            <!-- Хедер чата -->
+            <div class="chat-header">
+                <div class="chat-title">
+                    <div class="chat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div>
+                        <h2 style="color: #FFFFFF;">ОБЩИЙ ЧАТ</h2>
+                        <div style="font-size: 14px; color: #FF6666;">
+                            <span id="typingIndicator"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-info">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div id="connectionStatus" style="display: flex; align-items: center; gap: 5px;">
+                            <div class="status-dot" id="connectionDot" style="background: #00CC00;"></div>
+                            <span style="color: #AAAAAA;">Подключен</span>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="clearChat()">
+                            <i class="fas fa-trash"></i> Очистить
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Окно сообщений -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Сообщения загружаются здесь -->
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Загрузка сообщений...</div>
+                </div>
+            </div>
+
+            <!-- Панель ввода -->
+            <div class="chat-input-container">
+                <div class="message-input-wrapper">
+                    <textarea 
+                        id="messageInput" 
+                        class="message-input" 
+                        placeholder="Напишите сообщение..."
+                        rows="1"
+                        maxlength="2000"
+                        oninput="autoResize(this); checkTyping()"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button class="send-button" onclick="sendMessage()" id="sendButton">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                    <div style="font-size: 12px; color: #888888;">
+                        <span id="charCount">0/2000</span>
+                        <span style="margin-left: 10px;">Enter - отправить, Shift+Enter - новая строка</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary btn-sm" onclick="insertEmoji('😀')" title="Смайлик">
+                            <i class="far fa-smile"></i>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="attachFile()" title="Прикрепить файл">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно профиля -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #FF0000;">
+                    <i class="fas fa-user"></i>
+                    <span id="profileUserName">Профиль</span>
+                </h3>
+                <button class="modal-close" onclick="closeProfile()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div class="user-avatar" id="profileUserAvatar" style="width: 100px; height: 100px; font-size: 40px; margin: 0 auto 15px;">
+                        A
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <span class="status-badge" id="profileUserRole">Пользователь</span>
+                        <span class="status-badge" id="profileUserStatus">Онлайн</span>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <div style="font-size: 12px; color: #FF6666; margin-bottom: 5px;">Имя:</div>
+                            <div style="color: #FFFFFF; font-weight: bold;" id="profileNickname">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #FF6666; margin-bottom: 5px;">Telegram:</div>
+                            <div style="color: #FFFFFF;" id="profileTelegram">-</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #FF6666; margin-bottom: 5px;">Сообщений:</div>
+                            <div style="color: #FFFFFF;" id="profileMessageCount">0</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #FF6666; margin-bottom: 5px;">Зарегистрирован:</div>
+                            <div style="color: #FFFFFF;" id="profileRegistered">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="adminActions" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255, 0, 0, 0.2); padding-top: 20px;">
+                    <h4 style="color: #FF6666; margin-bottom: 15px;">
+                        <i class="fas fa-user-shield"></i> Действия администратора
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <button class="btn btn-danger btn-sm" onclick="adminAction('ban')">
+                            <i class="fas fa-ban"></i> Забанить
+                        </button>
+                        <button class="btn btn-warning btn-sm" onclick="adminAction('mute')">
+                            <i class="fas fa-volume-mute"></i> Мут 5 мин
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="adminAction('make_admin')">
+                            <i class="fas fa-crown"></i> Сделать админом
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="adminAction('remove_admin')">
+                            <i class="fas fa-user"></i> Убрать админа
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно настроек -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="color: #FF0000;">
+                    <i class="fas fa-cog"></i> Настройки
+                </h3>
+                <button class="modal-close" onclick="closeSettings()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Уведомления</label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="notifyNewMessages" checked>
+                        <span class="checkmark"></span>
+                        Новые сообщения
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="notifyUserJoin" checked>
+                        <span class="checkmark"></span>
+                        Вход/выход пользователей
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Внешний вид</label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="darkMode" checked disabled>
+                        <span class="checkmark"></span>
+                        Темная тема (Acaragraph Red)
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Поведение</label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="enterToSend" checked>
+                        <span class="checkmark"></span>
+                        Enter для отправки
+                    </label>
+                    <label class="checkbox">
+                        <input type="checkbox" id="soundEffects" checked>
+                        <span class="checkmark"></span>
+                        Звуковые эффекты
+                    </label>
+                </div>
+                
+                <div style="border-top: 1px solid rgba(255, 0, 0, 0.2); padding-top: 20px; margin-top: 20px;">
+                    <h4 style="color: #FF6666; margin-bottom: 15px;">Информация о сессии</h4>
+                    <div style="font-size: 12px; color: #888888;">
+                        <div>ID пользователя: <span id="sessionUserId">-</span></div>
+                        <div>Время входа: <span id="sessionLoginTime">-</span></div>
+                        <div>Версия: Acaragraph Red 1.0.0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+                <button class="btn btn-secondary" onclick="closeSettings()">
+                    <i class="fas fa-times"></i> Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notificationContainer"></div>
+
+    <!-- Подключаем Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Основной скрипт чата -->
+    <script>
+        // ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ==========
+        let socket = null;
+        let currentUser = null;
+        let onlineUsers = [];
+        let messages = [];
+        let selectedUserId = null;
+        let typingTimeout = null;
+        let isTyping = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Acaragraph Red - чат инициализируется');
+            
+            // Загружаем данные пользователя
+            await loadUserData();
+            
+            // Инициализируем WebSocket соединение
+            initSocket();
+            
+            // Загружаем историю сообщений
+            loadMessages();
+            
+            // Загружаем онлайн пользователей
+            loadOnlineUsers();
+            
+            // Загружаем настройки
+            loadSettings();
+            
+            // Устанавливаем автофокус на поле ввода
+            setTimeout(() => {
+                document.getElementById('messageInput')?.focus();
+            }, 1000);
+            
+            // Обновляем статус каждые 30 секунд
+            setInterval(updateUserStatus, 30000);
+            
+            // Проверяем соединение каждые 10 секунд
+            setInterval(checkConnection, 10000);
+        });
+
+        // ========== ПОЛЬЗОВАТЕЛЬ ==========
+        async function loadUserData() {
+            try {
+                // Проверяем локальное хранилище
+                const savedUser = localStorage.getItem('acaragraph_user');
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                    console.log('✅ Пользователь из localStorage:', currentUser);
+                } else {
+                    // Если нет в localStorage, запрашиваем с сервера
+                    const response = await fetch('/api/auth/me');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        currentUser = data.user;
+                        localStorage.setItem('acaragraph_user', JSON.stringify(currentUser));
+                        console.log('✅ Пользователь с сервера:', currentUser);
+                    } else {
+                        // Если не авторизован - редирект на вход
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                }
+                
+                // Обновляем отображение пользователя
+                updateUserDisplay();
+                
+                // Показываем кнопку админки если пользователь админ
+                if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
+                    document.getElementById('adminBtn').style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки пользователя:', error);
+                showNotification('Ошибка загрузки профиля', 'error');
+                
+                // Пробуем использовать тестовые данные
+                if (!currentUser) {
+                    currentUser = {
+                        id: 1,
+                        nickname: 'Тестовый пользователь',
+                        role: 'user',
+                        avatar_color: '#FF0000',
+                        tg_username: '@test'
+                    };
+                    updateUserDisplay();
+                }
+            }
+        }
+
+        function updateUserDisplay() {
+            if (!currentUser) return;
+            
+            // Аватар
+            const avatar = document.getElementById('currentUserAvatar');
+            if (avatar) {
+                avatar.style.backgroundColor = currentUser.avatar_color || '#FF0000';
+                avatar.textContent = currentUser.nickname?.charAt(0).toUpperCase() || 'A';
+            }
+            
+            // Имя
+            const name = document.getElementById('currentUserName');
+            if (name) {
+                name.textContent = currentUser.nickname || 'Пользователь';
+            }
+            
+            // Роль
+            const role = document.getElementById('currentUserRole');
+            if (role) {
+                let roleText = '👤 Пользователь';
+                if (currentUser.role === 'admin') roleText = '👑 Админ';
+                if (currentUser.role === 'super_admin') roleText = '👑👑👑 Супер-админ';
+                role.textContent = roleText;
+            }
+            
+            // Статус точки
+            const statusDot = document.getElementById('statusDot');
+            if (statusDot) {
+                statusDot.className = 'status-dot online';
+            }
+        }
+
+        function updateUserStatus() {
+            if (socket && socket.connected && currentUser) {
+                socket.emit('user_activity', {
+                    userId: currentUser.id,
+                    status: 'online'
+                });
+            }
+        }
+
+        // ========== WebSocket ==========
+        function initSocket() {
+            try {
+                socket = io(window.location.origin, {
+                    transports: ['websocket', 'polling'],
+                    reconnection: true,
+                    reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+                    reconnectionDelay: 1000,
+                    timeout: 10000
+                });
+                
+                setupSocketListeners();
+                
+            } catch (error) {
+                console.error('❌ Ошибка инициализации WebSocket:', error);
+                showNotification('Ошибка подключения к чату', 'error');
+            }
+        }
+
+        function setupSocketListeners() {
+            // Подключение
+            socket.on('connect', () => {
+                console.log('✅ WebSocket подключен! ID:', socket.id);
+                reconnectAttempts = 0;
+                updateConnectionStatus(true);
+                
+                // Авторизуем пользователя
+                if (currentUser) {
+                    socket.emit('auth', {
+                        id: currentUser.id,
+                        nickname: currentUser.nickname,
+                        avatar_color: currentUser.avatar_color,
+                        role: currentUser.role
+                    });
+                }
+                
+                // Запрашиваем историю
+                socket.emit('get_messages');
+            });
+            
+            // История сообщений
+            socket.on('messages_history', (data) => {
+                console.log('📜 Получена история:', data.length, 'сообщений');
+                messages = data;
+                displayMessages(messages);
+                updateMessageCount();
+            });
+            
+            // Новое сообщение
+            socket.on('new_message', (message) => {
+                console.log('📨 Новое сообщение:', message);
+                
+                // Добавляем в массив
+                messages.push(message);
+                
+                // Отображаем
+                displayMessage(message);
+                
+                // Обновляем счетчик
+                updateMessageCount();
+                
+                // Уведомление (если настроено)
+                if (document.getElementById('notifyNewMessages')?.checked) {
+                    if (document.hidden) {
+                        showBrowserNotification(message.user.nickname, message.text);
+                    }
+                    
+                    // Звук (если настроен)
+                    if (document.getElementById('soundEffects')?.checked) {
+                        playNotificationSound();
+                    }
+                }
+                
+                // Прокручиваем вниз
+                scrollToBottom();
+            });
+            
+            // Онлайн пользователи
+            socket.on('online_users_update', (data) => {
+                console.log('👥 Обновление онлайн пользователей:', data.users.length);
+                onlineUsers = data.users;
+                displayOnlineUsers();
+                updateOnlineCount();
+            });
+            
+            // Пользователь печатает
+            socket.on('user_typing', (data) => {
+                if (data.userId === currentUser.id) return;
+                
+                const indicator = document.getElementById('typingIndicator');
+                if (indicator) {
+                    indicator.textContent = `${data.nickname} печатает...`;
+                    
+                    clearTimeout(typingTimeout);
+                    typingTimeout = setTimeout(() => {
+                        indicator.textContent = '';
+                    }, 3000);
+                }
+            });
+            
+            // Действия админа
+            socket.on('admin_action', (data) => {
+                console.log('🔨 Действие админа:', data);
+                
+                if (data.userId === currentUser.id) {
+                    switch (data.action) {
+                        case 'ban':
+                            showNotification('🚫 Вы были забанены администратором!', 'error');
+                            setTimeout(() => {
+                                localStorage.removeItem('acaragraph_user');
+                                window.location.href = 'index.html';
+                            }, 3000);
+                            break;
+                            
+                        case 'mute':
+                            showNotification('🔇 Вы замьючены на 5 минут', 'warning');
+                            break;
+                    }
+                }
+                
+                // Обновляем список пользователей
+                loadOnlineUsers();
+            });
+            
+            // Отключение
+            socket.on('disconnect', (reason) => {
+                console.log('❌ WebSocket отключен:', reason);
+                updateConnectionStatus(false);
+                
+                if (reason === 'io server disconnect') {
+                    // Сервер отключил, пробуем переподключиться
+                    socket.connect();
+                }
+            });
+            
+            // Ошибка подключения
+            socket.on('connect_error', (error) => {
+                console.error('❌ Ошибка подключения WebSocket:', error);
+                reconnectAttempts++;
+                
+                if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                    showNotification('❌ Не удалось подключиться к серверу', 'error');
+                } else {
+                    showNotification(`Попытка переподключения ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}`, 'warning');
+                }
+            });
+            
+            // Переподключение
+            socket.on('reconnect', (attemptNumber) => {
+                console.log(`✅ Переподключение успешно (попытка ${attemptNumber})`);
+                reconnectAttempts = 0;
+                updateConnectionStatus(true);
+                showNotification('✅ Соединение восстановлено', 'success');
+            });
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connectionDot');
+            const text = document.querySelector('#connectionStatus span');
+            
+            if (connected) {
+                dot.style.background = '#00CC00';
+                if (text) text.textContent = 'Подключен';
+            } else {
+                dot.style.background = '#FF3333';
+                if (text) text.textContent = 'Отключен';
+            }
+        }
+
+        function checkConnection() {
+            if (!socket || !socket.connected) {
+                console.log('🔄 Проверка соединения: отключен');
+                updateConnectionStatus(false);
+            }
+        }
+
+        // ========== СООБЩЕНИЯ ==========
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || !currentUser) {
+                return;
+            }
+            
+            if (!socket || !socket.connected) {
+                showNotification('❌ Нет соединения с сервером', 'error');
+                return;
+            }
+            
+            // Отправляем через WebSocket
+            socket.emit('send_message', {
+                userId: currentUser.id,
+                text: text,
+                type: 'text'
+            });
+            
+            // Очищаем поле ввода
+            input.value = '';
+            input.style.height = 'auto';
+            updateCharCount();
+            
+            // Сбрасываем статус печатания
+            if (isTyping) {
+                isTyping = false;
+                socket.emit('typing_stop');
+            }
+        }
+
+        function checkTyping() {
+            const input = document.getElementById('messageInput');
+            
+            if (input.value.length > 0 && !isTyping) {
+                isTyping = true;
+                socket.emit('typing', {
+                    userId: currentUser.id,
+                    nickname: currentUser.nickname
+                });
+            } else if (input.value.length === 0 && isTyping) {
+                isTyping = false;
+                socket.emit('typing_stop');
+            }
+        }
+
+        function handleKeyDown(event) {
+            const enterToSend = document.getElementById('enterToSend')?.checked ?? true;
+            
+            if (event.key === 'Enter') {
+                if (enterToSend && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            }
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+            updateCharCount();
+        }
+
+        function updateCharCount() {
+            const input = document.getElementById('messageInput');
+            const counter = document.getElementById('charCount');
+            
+            if (input && counter) {
+                const length = input.value.length;
+                counter.textContent = `${length}/2000`;
+                
+                if (length > 1900) {
+                    counter.style.color = '#FF3333';
+                } else if (length > 1500) {
+                    counter.style.color = '#FF9900';
+                } else {
+                    counter.style.color = '#888888';
+                }
+            }
+        }
+
+        async function loadMessages() {
+            try {
+                const response = await fetch('/api/chat/messages?limit=100');
+                const data = await response.json();
+                
+                if (data.success) {
+                    messages = data.messages;
+                    displayMessages(messages);
+                    updateMessageCount();
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки сообщений:', error);
+            }
+        }
+
+        function displayMessages(messages) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666666;">
+                        <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
+                        <p>Пока нет сообщений</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Напишите первое сообщение!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            messages.forEach(message => {
+                displayMessage(message);
+            });
+            
+            scrollToBottom();
+        }
+
+        function displayMessage(message) {
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            // Проверяем, не отображается ли уже это сообщение
+            if (document.getElementById(`message-${message.id}`)) {
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            messageDiv.id = `message-${message.id}`;
+            
+            const time = formatTime(message.timestamp || message.created_at);
+            const isCurrentUser = message.user?.id === currentUser?.id;
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar" 
+                     style="background-color: ${message.user?.avatar_color || '#FF0000'}"
+                     onclick="showProfile(${message.user?.id})">
+                    ${message.user?.nickname?.charAt(0).toUpperCase() || '?'}
+                </div>
+                <div class="message-content" style="${isCurrentUser ? 'background: rgba(255, 0, 0, 0.1);' : ''}">
+                    <div class="message-header">
+                        <strong class="message-sender" onclick="showProfile(${message.user?.id})">
+                            ${message.user?.nickname || 'Неизвестный'}
+                            ${message.user?.role === 'admin' ? '👑' : ''}
+                            ${message.user?.role === 'super_admin' ? '👑👑👑' : ''}
+                        </strong>
+                        <span class="message-time">${time}</span>
+                    </div>
+                    <div class="message-text">${escapeHtml(message.text)}</div>
+                    <div class="message-actions">
+                        <button class="message-action-btn" onclick="replyToMessage(${message.id}, '${message.user?.nickname}')">
+                            <i class="fas fa-reply"></i> Ответить
+                        </button>
+                        ${currentUser?.role === 'admin' || currentUser?.role === 'super_admin' ? `
+                            <button class="message-action-btn" onclick="deleteMessage(${message.id})">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(messageDiv);
+        }
+
+        function updateMessageCount() {
+            const count = messages.length;
+            const counter = document.getElementById('messageCount');
+            if (counter) {
+                counter.textContent = count;
+            }
+        }
+
+        function clearChat() {
+            if (confirm('Вы уверены, что хотите очистить историю сообщений? Это действие нельзя отменить.')) {
+                const container = document.getElementById('chatMessages');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666666;">
+                            <i class="fas fa-comment-slash" style="font-size: 48px; margin-bottom: 20px;"></i>
+                            <p>История сообщений очищена</p>
+                        </div>
+                    `;
+                }
+                messages = [];
+                updateMessageCount();
+                
+                showNotification('История сообщений очищена', 'info');
+            }
+        }
+
+        function replyToMessage(messageId, username) {
+            const input = document.getElementById('messageInput');
+            input.value = `@${username} `;
+            input.focus();
+        }
+
+        function deleteMessage(messageId) {
+            if (confirm('Удалить это сообщение?')) {
+                // Здесь можно добавить запрос на сервер для удаления
+                const messageDiv = document.getElementById(`message-${messageId}`);
+                if (messageDiv) {
+                    messageDiv.style.opacity = '0.5';
+                    messageDiv.style.textDecoration = 'line-through';
+                }
+                
+                showNotification('Сообщение удалено', 'success');
+            }
+        }
+
+        // ========== ПОЛЬЗОВАТЕЛИ ==========
+        async function loadOnlineUsers() {
+            try {
+                const response = await fetch('/api/chat/online');
+                const data = await response.json();
+                
+                if (data.success) {
+                    onlineUsers = data.users;
+                    displayOnlineUsers();
+                    updateOnlineCount();
+                }
+            } catch (error) {
+                console.error('❌ Ошибка загрузки онлайн пользователей:', error);
+            }
+        }
+
+        function displayOnlineUsers() {
+            const container = document.getElementById('usersList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (onlineUsers.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666666;">
+                        <i class="fas fa-user-slash" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <p style="font-size: 14px;">Нет пользователей онлайн</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Фильтруем текущего пользователя
+            const otherUsers = onlineUsers.filter(user => user.id !== currentUser?.id);
+            
+            otherUsers.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-item';
+                userDiv.onclick = () => showProfile(user.id);
+                
+                userDiv.innerHTML = `
+                    <div class="user-avatar-sm" style="background-color: ${user.avatar_color || '#FF0000'}">
+                        ${user.nickname?.charAt(0).toUpperCase() || '?'}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; color: #FFFFFF;">${user.nickname}</div>
+                        <div style="font-size: 12px; color: #FF6666;">
+                            ${user.role === 'admin' ? '👑 Админ' : ''}
+                            ${user.role === 'super_admin' ? '👑👑👑 Супер-админ' : ''}
+                        </div>
+                    </div>
+                    <div class="status-dot ${user.status || 'online'}"></div>
+                `;
+                
+                container.appendChild(userDiv);
+            });
+        }
+
+        function updateOnlineCount() {
+            const count = onlineUsers.length;
+            const counter = document.getElementById('onlineCount');
+            const usersCounter = document.getElementById('onlineUsersCount');
+            
+            if (counter) counter.textContent = count;
+            if (usersCounter) usersCounter.textContent = `${count} чел.`;
+        }
+
+        // ========== ПРОФИЛЬ ==========
+        function showProfile(userId) {
+            selectedUserId = userId;
+            
+            const user = onlineUsers.find(u => u.id === userId) || 
+                        messages.find(m => m.user?.id === userId)?.user;
+            
+            if (!user) {
+                // Загружаем данные пользователя с сервера
+                fetch(`/api/user/${userId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            displayProfile(data.user);
+                        } else {
+                            showNotification('Пользователь не найден', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ Ошибка загрузки профиля:', error);
+                        showNotification('Ошибка загрузки профиля', 'error');
+                    });
+                return;
+            }
+            
+            displayProfile(user);
+        }
+
+        function displayProfile(user) {
+            const modal = document.getElementById('profileModal');
+            const avatar = document.getElementById('profileUserAvatar');
+            const name = document.getElementById('profileUserName');
+            const nickname = document.getElementById('profileNickname');
+            const telegram = document.getElementById('profileTelegram');
+            const role = document.getElementById('profileUserRole');
+            const status = document.getElementById('profileUserStatus');
+            const adminActions = document.getElementById('adminActions');
+            
+            if (avatar) {
+                avatar.style.backgroundColor = user.avatar_color || '#FF0000';
+                avatar.textContent = user.nickname?.charAt(0).toUpperCase() || '?';
+            }
+            
+            if (name) name.textContent = user.nickname || 'Неизвестный';
+            if (nickname) nickname.textContent = user.nickname || '-';
+            if (telegram) telegram.textContent = user.tg_username || '-';
+            
+            if (role) {
+                let roleText = '👤 Пользователь';
+                if (user.role === 'admin') roleText = '👑 Админ';
+                if (user.role === 'super_admin') roleText = '👑👑👑 Супер-админ';
+                role.textContent = roleText;
+                                role.className = user.role === 'admin' || user.role === 'super_admin' ? 'status-badge status-admin' : 'status-badge status-active';
+            }
+            
+            if (status) {
+                status.textContent = user.is_banned ? '🚫 Забанен' : '✅ Активен';
+                status.className = user.is_banned ? 'status-badge status-banned' : 'status-badge status-active';
+            }
+            
+            // Показываем кнопки админа только если текущий пользователь админ и это не он сам
+            if (adminActions && currentUser && 
+                (currentUser.role === 'admin' || currentUser.role === 'super_admin') && 
+                user.id !== currentUser.id) {
+                adminActions.style.display = 'block';
+            } else if (adminActions) {
+                adminActions.style.display = 'none';
+            }
+            
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeProfile() {
+            const modal = document.getElementById('profileModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+            selectedUserId = null;
+        }
+
+        function adminAction(action) {
+            if (!selectedUserId || !currentUser) return;
+            
+            const actions = {
+                'ban': { text: 'Забанить пользователя?', confirm: 'Да, забанить' },
+                'mute': { text: 'Замьютить пользователя на 5 минут?', confirm: 'Да, замьютить' },
+                'make_admin': { text: 'Сделать этого пользователя администратором?', confirm: 'Да, сделать админом' },
+                'remove_admin': { text: 'Убрать права администратора?', confirm: 'Да, убрать' }
+            };
+            
+            if (!actions[action]) return;
+            
+            if (confirm(actions[action].text)) {
+                fetch('/api/admin/users/action', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        adminId: currentUser.id,
+                        userId: selectedUserId,
+                        action: action
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification(data.message || 'Действие выполнено', 'success');
+                        closeProfile();
+                        loadOnlineUsers();
+                    } else {
+                        showNotification(data.message || 'Ошибка', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Ошибка действия админа:', error);
+                    showNotification('Ошибка соединения', 'error');
+                });
+            }
+        }
+
+        // ========== НАСТРОЙКИ ==========
+        function showSettings() {
+            const modal = document.getElementById('settingsModal');
+            const userId = document.getElementById('sessionUserId');
+            const loginTime = document.getElementById('sessionLoginTime');
+            
+            if (userId && currentUser) {
+                userId.textContent = currentUser.id;
+            }
+            
+            if (loginTime) {
+                loginTime.textContent = new Date().toLocaleTimeString();
+            }
+            
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function loadSettings() {
+            try {
+                const settings = JSON.parse(localStorage.getItem('acaragraph_settings') || '{}');
+                
+                // Применяем настройки
+                const notifyNewMessages = document.getElementById('notifyNewMessages');
+                const notifyUserJoin = document.getElementById('notifyUserJoin');
+                const enterToSend = document.getElementById('enterToSend');
+                const soundEffects = document.getElementById('soundEffects');
+                
+                if (notifyNewMessages) notifyNewMessages.checked = settings.notifyNewMessages !== false;
+                if (notifyUserJoin) notifyUserJoin.checked = settings.notifyUserJoin !== false;
+                if (enterToSend) enterToSend.checked = settings.enterToSend !== false;
+                if (soundEffects) soundEffects.checked = settings.soundEffects !== false;
+                
+            } catch (error) {
+                console.error('❌ Ошибка загрузки настроек:', error);
+            }
+        }
+
+        function saveSettings() {
+            try {
+                const settings = {
+                    notifyNewMessages: document.getElementById('notifyNewMessages')?.checked ?? true,
+                    notifyUserJoin: document.getElementById('notifyUserJoin')?.checked ?? true,
+                    enterToSend: document.getElementById('enterToSend')?.checked ?? true,
+                    soundEffects: document.getElementById('soundEffects')?.checked ?? true
+                };
+                
+                localStorage.setItem('acaragraph_settings', JSON.stringify(settings));
+                showNotification('Настройки сохранены', 'success');
+                closeSettings();
+                
+            } catch (error) {
+                console.error('❌ Ошибка сохранения настроек:', error);
+                showNotification('Ошибка сохранения настроек', 'error');
+            }
+        }
+
+        // ========== УТИЛИТЫ ==========
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            // Если сегодня
+            if (date.toDateString() === now.toDateString()) {
+                if (diffMins < 1) return 'только что';
+                if (diffMins < 60) return `${diffMins} мин назад`;
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            // Если вчера
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            if (date.toDateString() === yesterday.toDateString()) {
+                return `вчера ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            }
+            
+            // Если на этой неделе
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays < 7) {
+                const days = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
+                return `${days[date.getDay()]} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            }
+            
+            // Более недели назад
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatMessages');
+            if (container) {
+                setTimeout(() => {
+                    container.scrollTop = container.scrollHeight;
+                }, 100);
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notificationContainer');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            const icons = {
+                'success': 'fa-check-circle',
+                'error': 'fa-exclamation-circle',
+                'warning': 'fa-exclamation-triangle',
+                'info': 'fa-info-circle'
+            };
+            
+            notification.innerHTML = `
+                <i class="fas ${icons[type] || icons.info}"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.remove()" style="margin-left: auto; background: none; border: none; color: #AAAAAA; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Автоудаление через 5 секунд
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+
+        function showBrowserNotification(title, body) {
+            if (!("Notification" in window)) return;
+            
+            if (Notification.permission === "granted") {
+                new Notification(title, { body, icon: '/favicon.ico' });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(title, { body, icon: '/favicon.ico' });
+                    }
+                });
+            }
+        }
+
+        function playNotificationSound() {
+            try {
+                // Создаем простой звук уведомления
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+            } catch (error) {
+                console.log('❌ Ошибка воспроизведения звука:', error);
+            }
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('messageInput');
+            input.value += emoji;
+            input.focus();
+            autoResize(input);
+        }
+
+        function attachFile() {
+            showNotification('Загрузка файлов будет в следующей версии!', 'info');
+        }
+
+        function testConnection() {
+            const button = document.querySelector('[onclick="testConnection()"]');
+            const originalText = button.innerHTML;
+            
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            button.disabled = true;
+            
+            fetch('/api/ping')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('✅ Соединение отлично!', 'success');
+                        button.innerHTML = '<i class="fas fa-check"></i> OK';
+                        button.style.background = 'linear-gradient(135deg, #00CC00, #00AA00)';
+                    } else {
+                        throw new Error('Сервер не отвечает корректно');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Ошибка соединения:', error);
+                    showNotification('❌ Нет связи с сервером', 'error');
+                    button.innerHTML = '<i class="fas fa-times"></i> ОШИБКА';
+                    button.style.background = 'linear-gradient(135deg, #FF3333, #CC0000)';
+                })
+                .finally(() => {
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.style.background = '';
+                        button.disabled = false;
+                    }, 3000);
+                });
+        }
+
+        function logout() {
+            if (confirm('Вы действительно хотите выйти?')) {
+                if (socket && socket.connected) {
+                    socket.disconnect();
+                }
+                
+                localStorage.removeItem('acaragraph_user');
+                showNotification('Выход выполнен', 'info');
+                
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }
+        }
+
+        // ========== ОБРАБОТЧИКИ СОБЫТИЙ ==========
+        window.onclick = function(event) {
+            const profileModal = document.getElementById('profileModal');
+            const settingsModal = document.getElementById('settingsModal');
+            
+            if (event.target === profileModal) {
+                closeProfile();
+            }
+            if (event.target === settingsModal) {
+                closeSettings();
+            }
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeProfile();
+                closeSettings();
+            }
+        });
+
+        // Обработка видимости страницы
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && currentUser) {
+                updateUserStatus();
+            }
+        });
+
+        // Предотвращение закрытия страницы при наборе текста
+        window.addEventListener('beforeunload', function(e) {
+            const input = document.getElementById('messageInput');
+            if (input && input.value.trim().length > 0) {
+                e.preventDefault();
+                e.returnValue = 'У вас есть неотправленное сообщение. Вы уверены, что хотите покинуть страницу?';
+            }
+            
+            // Уведомляем сервер о выходе
+            if (socket && socket.connected && currentUser) {
+                socket.emit('user_offline', { userId: currentUser.id });
+            }
+        });
+
+        // ========== ДЕБАГ ФУНКЦИИ ==========
+        window.debugInfo = function() {
+            console.log('=== ACARAGRAPH DEBUG INFO ===');
+            console.log('Current User:', currentUser);
+            console.log('Socket:', socket ? 'Connected: ' + socket.connected : 'Not initialized');
+            console.log('Online Users:', onlineUsers.length);
+            console.log('Messages:', messages.length);
+            console.log('Reconnect Attempts:', reconnectAttempts);
+            console.log('Local Storage:', localStorage.length);
+            console.log('=============================');
+        };
+
+        window.debugClearChat = function() {
+            localStorage.removeItem('acaragraph_chat_cache');
+            messages = [];
+            const container = document.getElementById('chatMessages');
+            if (container) container.innerHTML = '';
+            showNotification('Локальный кэш чата очищен', 'info');
+        };
+
+        window.debugTestMessage = function() {
+            const testMessage = {
+                id: Date.now(),
+                text: 'Тестовое сообщение от системы',
+                user: {
+                    id: 0,
+                    nickname: 'Система',
+                    avatar_color: '#FF0000',
+                    role: 'system'
+                },
+                timestamp: new Date().toISOString()
+            };
+            
+            displayMessage(testMessage);
+            showNotification('Тестовое сообщение добавлено', 'info');
+        };
+    </script>
+</body>
+</html>
