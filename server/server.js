@@ -9,10 +9,16 @@ const path = require('path');
 const { query, run, get } = require('./database');
 const { checkAdmin, getUserProfile, checkUserStatus } = require('./auth');
 
+// ... предыдущий код ...
+
 // ========== НАСТРОЙКА СЕРВЕРА ==========
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
+
+// ========== ДОБАВЬ ЭТУ СТРОКУ ДЛЯ RENDER ==========
+app.set('trust proxy', 1);  // ← ВСТАВЬ ЗДЕСЬ!
+// ==================================================
 
 // WebSocket с настройками
 const io = socketIo(server, {
@@ -40,9 +46,12 @@ app.use(compression());
 // Лимит запросов
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100
+  max: 100,
+  trustProxy: true  // ← И ЭТОТ ПАРАМЕТР ДОБАВЬ
 });
 app.use('/api/', limiter);
+
+// ... остальной код ...
 
 // ========== MIDDLEWARE ==========
 app.use(cors());
@@ -778,4 +787,5 @@ process.on('SIGTERM', () => {
     console.log('✅ Сервер корректно остановлен');
     process.exit(0);
   });
+
 });
